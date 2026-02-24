@@ -1,0 +1,29 @@
+{
+    "expo": {
+        "name": "Extinctbook",
+        "slug": "extinctbook",
+        "version": "1.0.0",
+        "sdkVersion": "54.0.0",
+        "orientation": "portrait",
+        "scheme": "extinctbook",
+        "userInterfaceStyle": "automatic",
+        "ios": {
+            "supportsTablet": false,
+            "bundleIdentifier": "com.extinctbook.app"
+        },
+        "android": {
+            "package": "com.extinctbook.app"
+        },
+        "web": {
+            "bundler": "metro",
+            "output": "static"
+        },
+        "plugins": [
+            "expo-router",
+            "expo-font"
+        ],
+        "experiments": {
+            "typedRoutes": true
+        }
+    }
+}

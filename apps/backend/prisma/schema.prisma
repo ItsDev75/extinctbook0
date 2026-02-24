@@ -1,0 +1,289 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ═══════════════════════════════════════════════════
+// AUTH MODULE
+// ═══════════════════════════════════════════════════
+
+enum UserRole {
+  user
+  lawyer
+  wealth_client
+  admin
+  field_agent
+  manager
+}
+
+model User {
+  id          String   @id @default(uuid())
+  name        String
+  email       String   @unique
+  mobile      String   @unique
+  password    String
+  role        UserRole @default(user)
+  avatarUrl   String?
+  isVerified  Boolean  @default(false)
+  isDarkMode  Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  otpRecords    OtpRecord[]
+  transactions  Transaction[]
+  categories    Category[]
+  matters       LegalMatter[]
+  hearings      Hearing[]
+  goals         FinancialGoal[]
+  sips          SipEntry[]
+  insurances    InsurancePolicy[]
+
+  @@map("users")
+}
+
+model OtpRecord {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  code      String
+  expiresAt DateTime
+  isUsed    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@map("otp_records")
+}
+
+// ═══════════════════════════════════════════════════
+// EXPENSE MODULE
+// ═══════════════════════════════════════════════════
+
+enum TransactionType {
+  expense
+  income
+  transfer
+}
+
+enum PaymentMode {
+  cash
+  upi
+  card
+  bank
+  wallet
+}
+
+enum RecurringInterval {
+  daily
+  weekly
+  monthly
+  yearly
+}
+
+model Category {
+  id           String        @id @default(uuid())
+  name         String
+  icon         String
+  color        String
+  isCustom     Boolean       @default(false)
+  userId       String?
+  user         User?         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions Transaction[]
+
+  @@map("categories")
+}
+
+model Transaction {
+  id                 String             @id @default(uuid())
+  userId             String
+  user               User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type               TransactionType
+  amount             Decimal            @db.Decimal(15, 2)
+  currency           String             @default("INR")
+  categoryId         String
+  category           Category           @relation(fields: [categoryId], references: [id])
+  paymentMode        PaymentMode        @default(cash)
+  note               String?
+  date               DateTime
+  isRecurring        Boolean            @default(false)
+  recurringInterval  RecurringInterval?
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+
+  @@map("transactions")
+}
+
+// ═══════════════════════════════════════════════════
+// LITIGATION MODULE
+// ═══════════════════════════════════════════════════
+
+enum CaseStatus {
+  active
+  disposed
+  stayed
+  adjourned
+  pending
+}
+
+enum CourtType {
+  supreme_court
+  high_court
+  district_court
+  tribunal
+  other
+}
+
+model LegalClient {
+  id        String        @id @default(uuid())
+  userId    String
+  name      String
+  mobile    String
+  email     String?
+  address   String?
+  matters   LegalMatter[]
+  createdAt DateTime      @default(now())
+
+  @@map("legal_clients")
+}
+
+model LegalMatter {
+  id              String      @id @default(uuid())
+  userId          String
+  user            User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  clientId        String
+  client          LegalClient @relation(fields: [clientId], references: [id])
+  caseNumber      String
+  title           String
+  petitioner      String
+  respondent      String
+  court           CourtType
+  courtName       String
+  status          CaseStatus  @default(active)
+  filedAt         DateTime
+  nextHearingAt   DateTime?
+  notes           String?
+  hearings        Hearing[]
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  @@map("legal_matters")
+}
+
+model Hearing {
+  id          String      @id @default(uuid())
+  matterId    String
+  matter      LegalMatter @relation(fields: [matterId], references: [id], onDelete: Cascade)
+  userId      String
+  user        User        @relation(fields: [userId], references: [id])
+  scheduledAt DateTime
+  courtroom   String?
+  judge       String?
+  outcome     String?
+  notes       String?
+  isMine      Boolean     @default(true)
+  createdAt   DateTime    @default(now())
+
+  @@map("hearings")
+}
+
+// ═══════════════════════════════════════════════════
+// WEALTH MODULE
+// ═══════════════════════════════════════════════════
+
+enum GoalType {
+  retirement
+  education
+  home
+  travel
+  emergency
+  other
+}
+
+model FinancialGoal {
+  id            String   @id @default(uuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name          String
+  type          GoalType
+  targetAmount  Decimal  @db.Decimal(15, 2)
+  currentAmount Decimal  @db.Decimal(15, 2) @default(0)
+  targetDate    DateTime
+  currency      String   @default("INR")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@map("financial_goals")
+}
+
+model SipEntry {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  fundName  String
+  amount    Decimal  @db.Decimal(15, 2)
+  frequency String   @default("monthly")
+  nextDueAt DateTime
+  startedAt DateTime
+  isActive  Boolean  @default(true)
+
+  @@map("sip_entries")
+}
+
+model InsurancePolicy {
+  id                String   @id @default(uuid())
+  userId            String
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  policyName        String
+  insurer           String
+  type              String
+  premiumAmount     Decimal  @db.Decimal(15, 2)
+  premiumFrequency  String   @default("annually")
+  nextDueAt         DateTime
+  maturityAt        DateTime?
+  coverAmount       Decimal  @db.Decimal(15, 2)
+  isActive          Boolean  @default(true)
+
+  @@map("insurance_policies")
+}
+
+// ═══════════════════════════════════════════════════
+// ADMIN MODULE
+// ═══════════════════════════════════════════════════
+
+enum OrderStatus {
+  new
+  processing
+  dispatched
+  delivered
+  cancelled
+}
+
+model Order {
+  id          String      @id @default(uuid())
+  clientName  String
+  clientEmail String
+  totalAmount Decimal     @db.Decimal(15, 2)
+  status      OrderStatus @default(new)
+  assignedTo  String?
+  items       OrderItem[]
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  @@map("orders")
+}
+
+model OrderItem {
+  id        String  @id @default(uuid())
+  orderId   String
+  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  name      String
+  quantity  Int
+  unitPrice Decimal @db.Decimal(15, 2)
+
+  @@map("order_items")
+}
