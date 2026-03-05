@@ -57,7 +57,7 @@ async function seedSystemCategories() {
     for (const name of targetNames) {
         const dupes = await prisma.category.findMany({
             where: { name, userId: null, isCustom: false },
-            orderBy: { createdAt: "asc" },
+            orderBy: { id: "asc" },
         });
         if (dupes.length > 1) {
             // Delete all except the first (oldest)

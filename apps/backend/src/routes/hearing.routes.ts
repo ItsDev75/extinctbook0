@@ -1,7 +1,8 @@
 import { Router, Response } from "express";
+import type { Router as ExpressRouter } from "express";
 import { authenticate, AuthRequest } from "../middleware/auth";
 
-export const hearingRouter = Router();
+export const hearingRouter: ExpressRouter = Router();
 hearingRouter.use(authenticate);
 
 // GET /api/hearings

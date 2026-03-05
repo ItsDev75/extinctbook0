@@ -58,6 +58,7 @@ sudo -u "${APP_USER}" -H bash -lc "cd '${APP_DIR}' && pnpm --filter @extinctbook
 sudo -u "${APP_USER}" -H bash -lc "cd '${APP_DIR}' && pnpm --filter @extinctbook/backend exec prisma migrate deploy"
 
 echo "== Build apps =="
+sudo -u "${APP_USER}" -H bash -lc "cd '${APP_DIR}' && pnpm --filter @extinctbook/shared build"
 sudo -u "${APP_USER}" -H bash -lc "cd '${APP_DIR}' && pnpm --filter @extinctbook/backend build"
 sudo -u "${APP_USER}" -H bash -lc "cd '${APP_DIR}' && pnpm --filter @extinctbook/admin build"
 

@@ -19,6 +19,7 @@ if [ ! -f "${APP_DIR}/.env" ]; then
   cp "${APP_DIR}/.env.example" "${APP_DIR}/.env"
   echo "Created .env from .env.example. Update secrets before production use."
 fi
+ln -sf "${APP_DIR}/.env" "${APP_DIR}/apps/backend/.env"
 
 set -a
 . "${APP_DIR}/.env"
@@ -32,7 +33,7 @@ pnpm install
 
 echo "== Prepare database =="
 pnpm --filter @extinctbook/backend db:generate
-pnpm --filter @extinctbook/backend db:migrate
+pnpm --filter @extinctbook/backend exec prisma migrate deploy
 
 echo "== Start backend + admin (dev) =="
 pnpm dev

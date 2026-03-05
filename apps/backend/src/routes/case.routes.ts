@@ -1,7 +1,8 @@
 import { Router, Response } from "express";
+import type { Router as ExpressRouter } from "express";
 import { authenticate, AuthRequest } from "../middleware/auth";
 
-export const caseRouter = Router();
+export const caseRouter: ExpressRouter = Router();
 caseRouter.use(authenticate);
 
 // GET /api/cases

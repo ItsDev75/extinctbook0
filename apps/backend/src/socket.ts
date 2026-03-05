@@ -1,6 +1,6 @@
 import { Server } from "socket.io";
 import { Server as HttpServer } from "http";
-import { DisplayBoardEntry } from "@livemunshi/shared";
+import { DisplayBoardEntry } from "@extinctbook/shared";
 
 let io: Server;
 

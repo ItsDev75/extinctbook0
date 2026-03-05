@@ -1,7 +1,8 @@
 import { Router, Response } from "express";
+import type { Router as ExpressRouter } from "express";
 import { authenticate, requireRole, AuthRequest } from "../middleware/auth";
 
-export const orderRouter = Router();
+export const orderRouter: ExpressRouter = Router();
 orderRouter.use(authenticate);
 orderRouter.use(requireRole("admin", "manager", "field_agent"));
 

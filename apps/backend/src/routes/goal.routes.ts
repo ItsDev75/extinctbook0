@@ -1,7 +1,8 @@
 import { Router, Response } from "express";
+import type { Router as ExpressRouter } from "express";
 import { authenticate, AuthRequest } from "../middleware/auth";
 
-export const goalRouter = Router();
+export const goalRouter: ExpressRouter = Router();
 goalRouter.use(authenticate);
 
 // GET /api/goals

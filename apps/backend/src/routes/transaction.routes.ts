@@ -1,4 +1,5 @@
 import { Router, Response } from "express";
+import type { Router as ExpressRouter } from "express";
 import { authenticate, AuthRequest } from "../middleware/auth";
 import { transactionFiltersSchema, createTransactionSchema, updateTransactionSchema } from "@extinctbook/shared";
 import {
@@ -12,7 +13,7 @@ import {
     getDailySpending,
 } from "../services/transaction.service";
 
-export const transactionRouter = Router();
+export const transactionRouter: ExpressRouter = Router();
 transactionRouter.use(authenticate);
 
 // ── GET /api/transactions ──────────────────────────────────────────────────
@@ -68,7 +69,8 @@ transactionRouter.get("/chart/daily", async (req: AuthRequest, res: Response) =>
 // ── GET /api/transactions/:id ─────────────────────────────────────────────
 transactionRouter.get("/:id", async (req: AuthRequest, res: Response) => {
     try {
-        const tx = await getTransactionById(req.user!.id, req.params.id);
+        const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+        const tx = await getTransactionById(req.user!.id, id);
         if (!tx) {
             res.status(404).json({ success: false, message: "Transaction not found" });
             return;
@@ -103,7 +105,8 @@ transactionRouter.patch("/:id", async (req: AuthRequest, res: Response) => {
             res.status(400).json({ success: false, errors: parsed.error.flatten().fieldErrors });
             return;
         }
-        const tx = await updateTransaction(req.user!.id, req.params.id, parsed.data);
+        const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+        const tx = await updateTransaction(req.user!.id, id, parsed.data);
         res.json({ success: true, data: tx });
     } catch (err: any) {
         const status = err.message.includes("not found") ? 404 : 500;
@@ -114,7 +117,8 @@ transactionRouter.patch("/:id", async (req: AuthRequest, res: Response) => {
 // ── DELETE /api/transactions/:id ──────────────────────────────────────────
 transactionRouter.delete("/:id", async (req: AuthRequest, res: Response) => {
     try {
-        await deleteTransaction(req.user!.id, req.params.id);
+        const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+        await deleteTransaction(req.user!.id, id);
         res.json({ success: true, message: "Transaction deleted" });
     } catch (err: any) {
         const status = err.message.includes("not found") ? 404 : 500;
