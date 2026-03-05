@@ -3,7 +3,7 @@ set -euo pipefail
 
 APP_USER="ubuntu"
 APP_DIR="/home/${APP_USER}/extinctbook0"
-REPO_URL="https://github.com/devta181281/extinctbook0.git"
+REPO_URL="https://github.com/ItsDev75/extinctbook0.git"
 NODE_VERSION="20"
 PNPM_VERSION="9.15.4"
 
@@ -33,6 +33,7 @@ echo "== Configure env =="
 if [ ! -f "${APP_DIR}/.env" ]; then
   cp "${APP_DIR}/.env.example" "${APP_DIR}/.env"
 fi
+ln -sf "${APP_DIR}/.env" "${APP_DIR}/apps/backend/.env"
 set -a
 . "${APP_DIR}/.env"
 set +a
@@ -47,13 +48,14 @@ sudo -u postgres psql -tc "SELECT 1 FROM pg_roles WHERE rolname='${POSTGRES_USER
 sudo -u postgres psql -tc "SELECT 1 FROM pg_database WHERE datname='${POSTGRES_DB}'" | grep -q 1 || \
   sudo -u postgres createdb -O "${POSTGRES_USER}" "${POSTGRES_DB}"
 sudo -u postgres psql -c "ALTER ROLE ${POSTGRES_USER} WITH PASSWORD '${POSTGRES_PASSWORD}';"
+sudo -u postgres psql -c "ALTER ROLE ${POSTGRES_USER} CREATEDB;"
 
 echo "== Install dependencies =="
 sudo -u "${APP_USER}" -H bash -lc "cd '${APP_DIR}' && pnpm install"
 
 echo "== Prepare database (Prisma) =="
 sudo -u "${APP_USER}" -H bash -lc "cd '${APP_DIR}' && pnpm --filter @extinctbook/backend db:generate"
-sudo -u "${APP_USER}" -H bash -lc "cd '${APP_DIR}' && pnpm --filter @extinctbook/backend db:migrate"
+sudo -u "${APP_USER}" -H bash -lc "cd '${APP_DIR}' && pnpm --filter @extinctbook/backend exec prisma migrate deploy"
 
 echo "== Build apps =="
 sudo -u "${APP_USER}" -H bash -lc "cd '${APP_DIR}' && pnpm --filter @extinctbook/backend build"
