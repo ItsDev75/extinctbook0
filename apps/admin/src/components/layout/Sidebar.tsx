@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import type { Route } from "next";
 import { usePathname } from "next/navigation";
 import {
     LayoutDashboard,
@@ -13,6 +14,7 @@ import {
     Menu,
     X,
 } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import { useState } from "react";
 
 const navItems = [
@@ -22,7 +24,7 @@ const navItems = [
     { label: "Analytics", href: "/analytics", icon: BarChart3 },
     { label: "Data & Privacy", href: "/privacy", icon: Shield },
     { label: "Settings", href: "/settings", icon: Settings },
-];
+] satisfies Array<{ label: string; href: Route; icon: LucideIcon }>;
 
 export function Sidebar() {
     const pathname = usePathname();
